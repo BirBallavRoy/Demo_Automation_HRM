@@ -3,13 +3,13 @@ import { Page, Locator } from "@playwright/test";
 
 export class LoginPage {
 
-    page : Page;
+    page: Page;
 
-    readonly username : Locator;
-    readonly password : Locator;
-    readonly loginBtn : Locator
+    readonly username: Locator;
+    readonly password: Locator;
+    readonly loginBtn: Locator
 
-    constructor(page : Page) {
+    constructor(page: Page) {
 
         this.page = page;
 
@@ -20,11 +20,15 @@ export class LoginPage {
 
     }
 
-    async login (username: string,pwd :string){
+    async navigate() {
+          await this.page.goto('/web/index.php/auth/login');
+    }
 
-       await this.username.fill(username);
-       await this.password.fill(pwd);
-       await this.loginBtn.click();
+    async login(username: string, pwd: string) {
+
+        await this.username.fill(username);
+        await this.password.fill(pwd);
+        await this.loginBtn.click();
 
 
     }

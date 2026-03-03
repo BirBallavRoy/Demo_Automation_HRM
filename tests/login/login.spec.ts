@@ -9,12 +9,10 @@ test('Valid Login Function', async ({ page }) => {
 
     const loginPage = new LoginPage(page);
 
-    await page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    await loginPage.navigate();
     await loginPage.login(
-        loginData.validUser.username,
-        loginData.validUser.password,
-
-
+        process.env.ADMIN_USERNAME!,
+        process.env.ADMIN_PASSWORD!
     );
 
 });
@@ -24,13 +22,13 @@ test('Login Function with invalid credentials', async ({ page }) => {
     const loginPage = new LoginPage(page);
 
     //await page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
-      await page.goto('/web/index.php/auth/login');
+    await loginPage.navigate();
 
     const username: string = faker.internet.username();
     const password: string = faker.internet.password();
-    
+
     await loginPage.login(username, password)
-      
+
 
 
 });

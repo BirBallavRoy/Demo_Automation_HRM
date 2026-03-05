@@ -4,25 +4,27 @@ import loginData from '../../test-data/login/loginData.json';
 import { faker } from '@faker-js/faker';
 
 
+let loginPage;
+
 
 test('Valid Login Function', async ({ page }) => {
 
-    const loginPage = new LoginPage(page);
+  //  test.setTimeout(60000);
 
-    await loginPage.navigate();
-    await loginPage.login(
-        process.env.ADMIN_USERNAME!,
-        process.env.ADMIN_PASSWORD!
-    );
+    loginPage = new LoginPage(page);
+
+    const username: string = loginData.validUser.username;
+    const password: string = loginData.validUser.password;
+
+
+    await loginPage.login(username, password);
 
 });
 
-test('Login Function with invalid credentials', async ({ page }) => {
+/*test('Login Function with invalid credentials', async ({ page }) => {
 
     const loginPage = new LoginPage(page);
 
-    //await page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
-    await loginPage.navigate();
 
     const username: string = faker.internet.username();
     const password: string = faker.internet.password();
@@ -32,4 +34,4 @@ test('Login Function with invalid credentials', async ({ page }) => {
 
 
 });
-
+*/

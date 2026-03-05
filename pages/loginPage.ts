@@ -20,17 +20,18 @@ export class LoginPage {
 
     }
 
-    async navigate() {
-          await this.page.goto('/web/index.php/auth/login');
-    }
-
     async login(username: string, pwd: string) {
+        await this.page.goto('/web/index.php/auth/login');
 
         await this.username.fill(username);
         await this.password.fill(pwd);
-        await this.loginBtn.click();
 
+        await Promise.all([
+            this.page.waitForLoadState('load'),
+            this.loginBtn.click()
+        ]);
 
+        console.log("Logged In");
     }
 
 

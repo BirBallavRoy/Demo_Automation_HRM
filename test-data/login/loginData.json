@@ -4,6 +4,7 @@
     "password": "admin123",
     "role" : "Admin",
     "status" : "Enabled"
+    
   },
   "invalidUser": {
     "username": "wronguser",

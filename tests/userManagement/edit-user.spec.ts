@@ -7,14 +7,20 @@ import { EditUserPage } from '../../pages/editUserPage';
 test.describe('Edit User Test Cases', () => {
     let loginPage: LoginPage;
     let editUserPage: EditUserPage;
+    let userManagement : UserManagementPage;
 
     test.beforeEach(async ({ page }) => {
         loginPage = new LoginPage(page);
-        editUserPage = new editUserPage(page);
+        editUserPage = new EditUserPage(page);
+        userManagement = new UserManagementPage(page);
 
         await loginPage.navigate();
-        await loginPage.login('admin', 'admin_password'); // replace with real credentials
-        await editUserPage.navigateToUserManagement();
+        await loginPage.login(
+            process.env.ADMIN_USERNAME!,
+            process.env.ADMIN_PASSWORD!
+        );
+
+        await userManagement.navigateToUserManagement();
     });
 
     test('Verify Edit User with Valid Data (positive1)', async () => {

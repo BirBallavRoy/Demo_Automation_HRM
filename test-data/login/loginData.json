@@ -3,7 +3,8 @@
     "username": "Admin",
     "password": "admin123",
     "role" : "Admin",
-    "status" : "Enabled"
+    "status" : "Enabled",
+    "emp_name" : "test"
     
   },
   "invalidUser": {

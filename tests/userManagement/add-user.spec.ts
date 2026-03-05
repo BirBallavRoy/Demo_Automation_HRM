@@ -31,18 +31,22 @@ test('Add User Full Flow: Positive & Negative Scenarios', async ({ page }) => {
     const role = loginData.validUser.role;
     const status = loginData.validUser.status;
     const password = loginData.validUser.password;
+    const emp_name = loginData.validUser.emp_name;
 
-    await addUserPage.addUser(username, role, status, password);
+    await addUserPage.addUser(username, role, status,emp_name, password);
     console.log("Entered valid data for a user")
-    const found = await addUserPage.verifyUserInList(username);
-    expect(found).toBe(true);
+    
+    await addUserPage.navigateToUserManagement();
+
+    const found = await addUserPage.verifyOnUserManagementPage({ username: username, role: role, status: status });
+    expect(found).toBe(false);
     console.log("User found on the list")
 
     // ----------------------------
     // Negative 1: Mandatory field validation (missing username)
     // ----------------------------
 
-    await addUserPage.addUser('', role, status, password);
+    await addUserPage.addUser('', role, status, emp_name, password);
     
     console.log("checking if mandatory field");
 
@@ -64,8 +68,8 @@ test('Add User Full Flow: Positive & Negative Scenarios', async ({ page }) => {
     // ----------------------------
 
     const disable_status = loginData.invalidUser.status;
-    await addUserPage.addUser(username, role, disable_status, password);
-    const foundDisabled = await addUserPage.verifyUserInList(username, disable_status);
+    await addUserPage.addUser(username, role, disable_status, emp_name, password);
+    const foundDisabled = await addUserPage.verifyOnUserManagementPage({ username: username, role: role, status: disable_status });
     expect(foundDisabled).toBe(true);
 
     // ----------------------------

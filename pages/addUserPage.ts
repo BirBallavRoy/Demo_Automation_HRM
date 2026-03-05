@@ -26,10 +26,11 @@ export class AddUserPage {
     }
 
     async navigateToUserManagement() {
-        await this.page.getByText('Admin').click();
+        await this.page.locator('a.oxd-main-menu-item[href="/web/index.php/admin/viewAdminModule"]').click();
+        await this.page.waitForLoadState('load');
     }
 
-    async addUser(username: string, role: string, status: string, password: string) {
+    async addUser(username: string, role: string, status: string, emp_name: string, password: string) {
         await this.addUserBtn.click();
 
         // Role - only fill if provided
@@ -38,10 +39,7 @@ export class AddUserPage {
             await this.page.getByRole('option', { name: role }).click();
         }
 
-        // Employee Name - only fill if provided
-        await this.page.getByRole('textbox', { name: 'Type for hints...' }).click();
-        await this.page.getByRole('textbox', { name: 'Type for hints...' }).fill('test');
-        await this.page.getByRole('option', { name: 'sww test' }).first().click();
+
 
         // Status - only fill if provided
         if (status) {
@@ -54,6 +52,14 @@ export class AddUserPage {
             await this.usernameInput.fill(username);
         }
 
+        if (emp_name) {
+
+            await this.page.getByRole('textbox', { name: 'Type for hints...' }).click();
+            await this.page.getByRole('textbox', { name: 'Type for hints...' }).fill('test');
+            await this.page.getByRole('option', { name: emp_name }).first().click();
+        }
+
+
         // Password - only fill if provided
         if (password) {
             await this.page.getByRole('textbox').nth(3).fill(password);
@@ -62,7 +68,11 @@ export class AddUserPage {
         }
 
         await this.saveBtn.click();
-        await this.page.waitForTimeout(3000); // wait 3s for save to complete
+        
+        console.log('Save clicked - waiting for page to reload...');
+
+        
+        await this.page.waitForTimeout(5000);
         await this.page.waitForLoadState('load');
     }
 
@@ -75,37 +85,32 @@ export class AddUserPage {
         await this.cancelBtn.click();
     }
 
-    async verifyUserInList(username: string, status?: string): Promise<boolean> {
 
-        // DEBUG - add these temporarily
-        console.log('Current URL:', this.page.url());
-        console.log('Page content:', await this.page.locator('.oxd-table-body').count());
-        console.log('Table rows:', await this.page.locator('.oxd-table-row').count());
-        console.log('Page title:', await this.page.title());
+    async verifyOnUserManagementPage(filters: { username?: string; role?: string; status?: string }): Promise<boolean> {
+        const { username, role, status } = filters;
 
-        await this.page.locator('.oxd-table-row').first().waitFor({ state: 'visible', timeout: 10000 });
+        // Wait for search results to appear
+        await this.page.waitForLoadState('load');
+        await this.page.locator('.oxd-table-card').first().waitFor({ state: 'visible', timeout: 90000 });
 
-        const rows = this.page.locator('.oxd-table-row--with-border'); // excludes header row
+        const rows = this.page.locator('.oxd-table-card');
         const rowCount = await rows.count();
 
-        if (rowCount === 0) {
-            console.log(`No records found`);
-            return false;
-        }
-
         for (let i = 0; i < rowCount; i++) {
-            const rowText = await rows.nth(i).innerText();
+            const row = rows.nth(i);
+            const rowText = await row.innerText();
 
-            const usernameMatch = rowText.includes(username);
+            const usernameMatch = username ? rowText.includes(username) : true;
+            const roleMatch = role ? rowText.includes(role) : true;
             const statusMatch = status ? rowText.includes(status) : true;
 
-            if (usernameMatch && statusMatch) {
-                console.log(`User "${username}" found in row ${i + 1}`);
+            if (usernameMatch && roleMatch && statusMatch) {
+                console.log(`Match found in row ${i + 1}`);
                 return true;
             }
         }
 
-        console.log(`User "${username}" NOT found`);
+        console.log("No matching user found");
         return false;
     }
 

@@ -11,72 +11,77 @@ let loginPage: LoginPage;
 let addUserPage: AddUserPage;
 let userManagement: UserManagementPage;
 
+
 test('Add User Full Flow: Positive & Negative Scenarios', async ({ page }) => {
-    loginPage = new LoginPage(page);
-    userManagement = new UserManagementPage(page);
-    addUserPage = new AddUserPage(page);
 
+  loginPage = new LoginPage(page);
+  userManagement = new UserManagementPage(page);
+  addUserPage = new AddUserPage(page);
 
-    const username_login: string = loginData.validUser.username;
-    const password_login: string = loginData.validUser.password;
+  const username_login : string = loginData.validUser.username;
+  const password_login : string = loginData.validUser.password;
 
+  await loginPage.login(username_login, password_login);
 
-    await loginPage.login(username_login, password_login);
+  await userManagement.navigateToUserManagement();
 
-    await userManagement.navigateToUserManagement();
+  const username = 'test_' + faker.internet.username().replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  //  const username = 'iamUser'
+  const role = loginData.validUser.role;
+  const status = loginData.validUser.status;
+  const password = loginData.validUser.password;
+  const emp_name = loginData.validUser.emp_name;
 
-    console.log("Now at user management page")
+  // ----------------------------
+  // Positive: Add user
+  // ----------------------------
 
-    const username = 'test_' + faker.internet.username().replace(/[^a-zA-Z0-9]/g, '').toLowerCase();;
-    const role = loginData.validUser.role;
-    const status = loginData.validUser.status;
-    const password = loginData.validUser.password;
-    const emp_name = loginData.validUser.emp_name;
+  await addUserPage.addUser(username, role, status, emp_name, password);
 
-    await addUserPage.addUser(username, role, status,emp_name, password);
-    console.log("Entered valid data for a user")
-    
-    await addUserPage.navigateToUserManagement();
+  await userManagement.navigateToUserManagement();
 
-    const found = await addUserPage.verifyOnUserManagementPage({ username: username, role: role, status: status });
-    expect(found).toBe(false);
-    console.log("User found on the list")
+  const found = await userManagement.verifyOnUserManagementPage({
+    username,
+    role,
+    status
+  });
 
-    // ----------------------------
-    // Negative 1: Mandatory field validation (missing username)
-    // ----------------------------
+  expect(found).toBe(true);
 
-    await addUserPage.addUser('', role, status, emp_name, password);
-    
-    console.log("checking if mandatory field");
+  // ----------------------------
+  // Negative: Mandatory field
+  // ----------------------------
 
-    const requiredError = addUserPage.page.locator('span.oxd-input-field-error-message', { hasText: 'Required' });
-    await requiredError.waitFor({ state: 'visible' });
-    expect(await requiredError.innerText()).toContain('Required');
+  await addUserPage.addUser('', role, status, emp_name, password);
 
-    /*
-    // ----------------------------
-    // Negative 2: Invalid username
-    // ----------------------------
-    await addUserPage.addUser('invalid user!', role, status, password); // invalid username
-    const invalidError = await addUserPage.page.locator('text=Invalid').innerText();
-    expect(invalidError).toContain('Invalid');
-    */
+  const requiredError = page.locator('span.oxd-input-field-error-message', { hasText: 'Required' });
 
-    // ----------------------------
-    // Positive 2: Add user with Status = Disabled
-    // ----------------------------
+  await expect(requiredError).toBeVisible();
 
-    const disable_status = loginData.invalidUser.status;
-    await addUserPage.addUser(username, role, disable_status, emp_name, password);
-    const foundDisabled = await addUserPage.verifyOnUserManagementPage({ username: username, role: role, status: disable_status });
-    expect(foundDisabled).toBe(true);
+  // ----------------------------
+  // Positive: Disabled user
+  // ----------------------------
 
-    // ----------------------------
-    // Positive 3: Verify Cancel button
-    // ----------------------------
-    await addUserPage.cancelAddUser();
-    expect(await addUserPage.usernameInput.isVisible()).toBeFalsy();
+  const username2 = 'test_' + faker.internet.username().replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
-    
+  const disable_status = loginData.invalidUser.status;
+
+  await addUserPage.addUser(username2, role, disable_status, emp_name, password);
+
+  const foundDisabled = await userManagement.verifyOnUserManagementPage({
+    username: username2,
+    role,
+    status: disable_status
+  });
+
+  expect(foundDisabled).toBe(true);
+
+  // ----------------------------
+  // Cancel button
+  // ----------------------------
+
+  await addUserPage.cancelAddUser();
+
+  await expect(page).toHaveURL(/viewSystemUsers/);
+
 });

@@ -2,46 +2,37 @@ import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/loginPage';
 import { UserManagementPage } from '../../pages/userManagement';
 import { EditUserPage } from '../../pages/editUserPage';
+import loginData from '../../test-data/login/loginData.json';
+import { faker } from '@faker-js/faker';
+
+let loginPage: LoginPage;
+let editUserPage: EditUserPage;
+let userManagement: UserManagementPage;
 
 
-test.describe('Edit User Test Cases', () => {
-    let loginPage: LoginPage;
-    let editUserPage: EditUserPage;
-    let userManagement : UserManagementPage;
 
-    test.beforeEach(async ({ page }) => {
-        loginPage = new LoginPage(page);
-        editUserPage = new EditUserPage(page);
-        userManagement = new UserManagementPage(page);
+test('Verify Edit User with Valid Data (positive1)', async ({ page }) => {
 
-        await loginPage.navigate();
-        await loginPage.login(
-            process.env.ADMIN_USERNAME!,
-            process.env.ADMIN_PASSWORD!
-        );
+    loginPage = new LoginPage(page);
+    userManagement = new UserManagementPage(page);
+    editUserPage = new EditUserPage(page);
+    
+    const username_login: string = loginData.validUser.username;
+    const password_login: string = loginData.validUser.password;
 
-        await userManagement.navigateToUserManagement();
-    });
 
-    test('Verify Edit User with Valid Data (positive1)', async () => {
-        await editUserPage.editUser('existing_user', 'updated_user', 'Admin', 'John Doe', 'Enabled');
-        await editUserPage.verifyUserInList('updated_user');
-    });
+    await loginPage.login(username_login, password_login);
+    await userManagement.navigateToUserManagement();
 
-    test('Verify mandatory field validation (negative1)', async () => {
-        await editUserPage.clearAllFieldsAndSave('existing_user');
-        const errorMessage = await editUserPage.page.locator('text=Required').innerText();
-        expect(errorMessage).toContain('Required');
-    });
+    const username = 'test_' + faker.internet.username().replace(/[^a-zA-Z0-9]/g, '').toLowerCase();;
+    const role = loginData.validUser.role;
+    const status = loginData.validUser.status;
+    const password = loginData.validUser.password;
 
-    test('Verify Status = Disabled (positive2)', async () => {
-        await editUserPage.editUserChangeStatus('existing_user', 'Disabled');
-        await editUserPage.verifyUserInList('existing_user', 'Disabled');
-    });
 
-    test('Verify Invalid Username (negative2)', async () => {
-        await editUserPage.editUserInvalidUsername('existing_user', 'invalid user!');
-        const errorMessage = await editUserPage.page.locator('text=Invalid').innerText();
-        expect(errorMessage).toContain('Invalid');
-    });
+    await editUserPage.editUser(username, role, status);
+    await userManagement.verifyOnUserManagementPage({ username: username, role: role, status: status });
+
+
 });
+

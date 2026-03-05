@@ -1,4 +1,4 @@
-import { Page, Locator } from "@playwright/test";
+import { Page, Locator, expect } from "@playwright/test";
 
 
 export class UserManagementPage {
@@ -70,13 +70,13 @@ export class UserManagementPage {
     await this.ResetBtn.click();
   }
 
-  
-  async verifyOnUserManagementPage(filters: { username?: string; role?: string; status?: string }): Promise<boolean> {
+
+  async verifyOnUserManagementPage1(filters: { username?: string; role?: string; status?: string }): Promise<boolean> {
     const { username, role, status } = filters;
 
     // Wait for search results to appear
     await this.page.waitForLoadState('load');
-    await this.page.locator('.oxd-table-card').first().waitFor({ state: 'visible', timeout: 60000 });
+    await this.page.locator('.oxd-table-card').first().waitFor({ state: 'visible', timeout: 90000 });
 
     const rows = this.page.locator('.oxd-table-card');
     const rowCount = await rows.count();
@@ -121,9 +121,44 @@ export class UserManagementPage {
     }
 
   };
+  async verifyOnUserManagementPage(filters: { username?: string; role?: string; status?: string }): Promise<boolean> {
+    const { username, role, status } = filters;
+
+    await this.page.waitForLoadState('load');
+    await this.page.waitForTimeout(2000);
+
+    // DEBUG - check what's on the page
+    console.log('Current URL:', this.page.url());
+    console.log('Row count (.oxd-table-row--with-border):', await this.page.locator('.oxd-table-row--with-border').count());
+
+    const rows = this.page.locator('.oxd-table-body .oxd-table-row--with-border')
 
 
+    const rowCount = await rows.count();
 
+    console.log(rowCount);
+
+    if (rowCount === 0) {
+      console.log('No rows found in table');
+      return false;
+    }
+
+    for (let i = 0; i < rowCount; i++) {
+      const rowText = await rows.nth(i).innerText();
+
+      const usernameMatch = username ? rowText.includes(username) : true;
+      const roleMatch = role ? rowText.includes(role) : true;
+      const statusMatch = status ? rowText.includes(status) : true;
+
+      if (usernameMatch && roleMatch && statusMatch) {
+        console.log(`Match found in row ${i + 1}`);
+        return true;
+      }
+    }
+
+    console.log('No matching user found');
+    return false;
+  }
 
 
 }
